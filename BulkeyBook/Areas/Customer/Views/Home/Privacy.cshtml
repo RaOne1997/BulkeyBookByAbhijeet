@@ -1,0 +1,50 @@
+﻿@using BulkeyBook.Models.DataAccess.Modul
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@model ImageUplode
+
+<code>
+
+    @{
+        if (Model != null){
+        string imageBase64 = Convert.ToBase64String(Model.retriveImage);
+        string imageSrc = string.Format("data:image/jpeg;base64,{0}", imageBase64);
+
+        <img style='display:block; ' id='base64image'
+             src='@imageSrc' />
+        }
+        else{
+
+            <img style='display:block; ' id='base64image'
+             src=''alt="no Image" />
+        }
+
+
+    }
+
+   
+
+    <form method="post" asp-action="Privacy" enctype="multipart/form-data">
+        <input type="file" asp-for="ulodeImage" />
+
+        <Button type="submit">Image Click</Button>
+    </form>
+</code>
+
+@section Scripts{
+
+    <script type="text/javascript">
+        function uplode(abc) {
+
+            window.location.href = "/Admin/Product/Privacy?id=1"
+
+        }
+
+
+    </script>
+
+
+}
