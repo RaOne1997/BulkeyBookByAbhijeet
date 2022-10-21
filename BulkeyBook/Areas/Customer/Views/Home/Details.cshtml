@@ -61,7 +61,19 @@
                         </div>
                     </div>
                     <div class="col-12 col-lg-3 offset-lg-1 text-center">
-                        <img src="@Model.Product.ImageUrl" width="100%" class="rounded" />
+                        @{
+                            if (Model.Product.ImageUrl != null)
+                            {
+                                string imageBase64 = Convert.ToBase64String(Model.Product.ImageUrl);
+                                string imageSrc = string.Format("data:image/jpeg;base64,{0}", imageBase64);
+                                <img style='display:block; ' width="100%" id='base64image'
+                                 src='@imageSrc' />
+                            }
+                            else
+                            {
+                                <img style='display:block; ' width="100%" id='base64image' src='~/images/No_Image_Available.jpg' alt="no Image" />
+                            }
+                        }
                     </div>
                 </div>
             </div>

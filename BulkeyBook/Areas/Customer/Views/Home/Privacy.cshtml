@@ -8,22 +8,7 @@
 
 <code>
 
-    @{
-        if (Model != null){
-        string imageBase64 = Convert.ToBase64String(Model.retriveImage);
-        string imageSrc = string.Format("data:image/jpeg;base64,{0}", imageBase64);
-
-        <img style='display:block; ' id='base64image'
-             src='@imageSrc' />
-        }
-        else{
-
-            <img style='display:block; ' id='base64image'
-             src=''alt="no Image" />
-        }
-
-
-    }
+   
 
    
 

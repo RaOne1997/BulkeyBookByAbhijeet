@@ -34,7 +34,7 @@ namespace BulkeyBook.Models.DataAccess.Modul
         [Range(1, 10000)]
         public double Price100 { get; set; }
         [ValidateNever]
-        public string ImageUrl { get; set; }
+        public byte[]? ImageUrl { get; set; }
 
         [Required]
         [Display(Name = "Category")]

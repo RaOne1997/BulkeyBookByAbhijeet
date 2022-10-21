@@ -10,6 +10,7 @@ using System.Drawing;
 using System.Security.Claims;
 using Microsoft.Extensions.Hosting;
 using static System.Net.Mime.MediaTypeNames;
+using BulkeyBook.Models.Static_Roles;
 
 namespace BulkeyBook.Areas.Customer.Controllers
 {
@@ -39,6 +40,7 @@ namespace BulkeyBook.Areas.Customer.Controllers
             {
 
                 Count = 1,
+                ProductId = productId,
                 Product = _unitOfWork.Product.GetFirstOrDefault(u => u.Id == productId, includeProperties: "Category,CoverType")
 
             };
@@ -46,122 +48,40 @@ namespace BulkeyBook.Areas.Customer.Controllers
             return View(shoppingCart);
         }
 
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //[Authorize]
-        //public IActionResult Details(ShoppingCart shoppingCart)
-        //{
-        //    //var claimsIdentity = (ClaimsIdentity)User.Identity;
-        //    //var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
-        //    //shoppingCart.ApplicationUserId = claim.Value;
-
-        //    //ShoppingCart cartFromDb = _unitOfWork.ShoppingCart.GetFirstOrDefault(
-        //    //    u => u.ApplicationUserId == claim.Value && u.ProductId == shoppingCart.ProductId);
-
-
-        //    //if (cartFromDb == null)
-        //    //{
-
-        //    //    _unitOfWork.ShoppingCart.Add(shoppingCart);
-        //    //    _unitOfWork.Save();
-        //    //    HttpContext.Session.SetInt32(SD.SessionCart,
-        //    //        _unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == claim.Value).ToList().Count);
-        //    //}
-        //    //else
-        //    //{
-        //    //    _unitOfWork.ShoppingCart.IncrementCount(cartFromDb, shoppingCart.Count);
-        //    //    _unitOfWork.Save();
-        //    //}
-
-
-        //    //return RedirectToAction(nameof(Index));
-        //}
-
-
-        public ImageUplode aaaa(ImageUplode formFile = null)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+     
+        public IActionResult Details(ShoppingCart shoppingCart)
         {
+            var claimsIdentity = (ClaimsIdentity)User.Identity;
+            var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+            shoppingCart.UserINtoUserId = claim.Value;
+
+            ShoppingCart cartFromDb = _unitOfWork.shoppingRepository.GetFirstOrDefault(
+                u => u.UserINtoUserId == claim.Value && u.ProductId == shoppingCart.ProductId);
 
 
-            Bitmap myBitmap;
-            ImageCodecInfo myImageCodecInfo;
-            Encoder myEncoder;
-            EncoderParameter myEncoderParameter;
-            EncoderParameters myEncoderParameters;
-
-            if (formFile != null)
+            if (cartFromDb == null)
             {
 
-                // Create a Bitmap object based on a BMP file.
-
-
-                // Get an ImageCodecInfo object that represents the JPEG codec.
-                myImageCodecInfo = GetEncoderInfo("image/jpeg");
-
-                // Create an Encoder object based on the GUID
-
-                // for the Quality parameter category.
-                myEncoder = Encoder.Quality;
-                myBitmap = new Bitmap(formFile.ulodeImage.OpenReadStream());
-                // Create an EncoderParameters object.
-
-                // An EncoderParameters object has an array of EncoderParameter
-
-                // objects. In this case, there is only one
-
-                // EncoderParameter object in the array.
-          
-
-
-                myEncoderParameters = new EncoderParameters(1);
-
-
-                myEncoderParameter = new EncoderParameter(myEncoder, 70L);
-                myEncoderParameters.Param[0] = myEncoderParameter;
-                myBitmap.Save(@"E:/BulkeyBook/BulkeyBook/wwwroot\images/products/Shapes050.jpg", myImageCodecInfo, myEncoderParameters);
-
-
-
-
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    myEncoderParameter = new EncoderParameter(myEncoder, 75L);
-                    myEncoderParameters.Param[0] = myEncoderParameter;
-                    myBitmap.Save(ms, myImageCodecInfo, myEncoderParameters);
-                    formFile.retriveImage = ms.ToArray();
-                    Console.WriteLine();
-
-
-                }
-
-                return formFile;
+                _unitOfWork.shoppingRepository.Add(shoppingCart);
+                _unitOfWork.Save();
+                HttpContext.Session.SetInt32(ShoppingCartST.SessionCart,
+                    _unitOfWork.shoppingRepository.GetAll(u => u.UserINtoUserId == claim.Value).ToList().Count);
             }
             else
             {
-                return null;
+                //_unitOfWork.ShoppingCart.IncrementCount(cartFromDb, shoppingCart.Count);
+                //_unitOfWork.Save();
             }
-        }
 
-        public bool ThumbnailCallback()
-        {
-            return false;
-        }
 
-        private static ImageCodecInfo GetEncoderInfo(String mimeType)
-        {
-            int j;
-            ImageCodecInfo[] encoders;
-            encoders = ImageCodecInfo.GetImageEncoders();
-            for (j = 0; j < encoders.Length; ++j)
-            {
-                if (encoders[j].MimeType == mimeType)
-                    return encoders[j];
-            }
-            return null;
+            return RedirectToAction(nameof(Index));
         }
 
         public IActionResult Privacy()
         {
-            return View(aaaa());
+            return View();
         }
 
 
@@ -183,7 +103,7 @@ namespace BulkeyBook.Areas.Customer.Controllers
 
 
 
-            return View(aaaa(image));
+            return View();
         }
 
 

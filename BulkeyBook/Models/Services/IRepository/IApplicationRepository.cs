@@ -1,4 +1,5 @@
 ﻿using BulkeyBook.Models.DataAccess.Modul;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,9 +8,8 @@ using System.Threading.Tasks;
 
 namespace BulkyBook.DataAccess.Repository.IRepository
 {
-    public interface IProductRepository : IRepository<Product>
+    public interface IApplicationRepository : IRepository<UserINtoUser>
     {
-        void Update(Product obj);
-        byte[] aaaa(IFormFile formFile);
+        Task Update(UserINtoUser obj);
     }
 }

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BulkeyBook.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    [Migration("20221020092310_shoppingcart")]
-    partial class shoppingcart
+    [Migration("20221021063216_image uplode")]
+    partial class imageuplode
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -123,9 +123,9 @@ namespace BulkeyBook.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ImageUrl")
+                    b.Property<byte[]>("ImageUrl")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<double>("ListPrice")
                         .HasColumnType("float");
