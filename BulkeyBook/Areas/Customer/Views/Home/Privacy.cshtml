@@ -4,7 +4,7 @@
 *@
 @{
 }
-@model ImageUplode
+@model Payment
 
 <code>
 
@@ -12,9 +12,9 @@
 
    
 
-    <form method="post" asp-action="Privacy" enctype="multipart/form-data">
-        <input type="file" asp-for="ulodeImage" />
-
+    <form method="post" asp-action="Privacy" >
+        <input type="number" asp-for="amount" />
+        <input type="text" asp-for="purpose" />
         <Button type="submit">Image Click</Button>
     </form>
 </code>

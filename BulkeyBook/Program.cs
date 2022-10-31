@@ -23,6 +23,7 @@ builder.Services.AddDefaultIdentity<UserINtoUser>(options => options.SignIn.Requ
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddSession(objects => { objects.IdleTimeout = TimeSpan.FromMinutes(120); });
 
 var app = builder.Build();
 
@@ -36,11 +37,13 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseSession();
 
 app.UseRouting();
 app.UseAuthentication(); ;
 
 app.UseAuthorization();
+
 
 app.MapControllerRoute(
     name: "default",
