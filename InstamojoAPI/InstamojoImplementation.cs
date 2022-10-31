@@ -2,16 +2,20 @@
 
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 
 namespace InstamojoAPI
 {
     public class InstamojoImplementation : Instamojo
     {
+         
         private volatile static Instamojo uniqueInstance; // for singleton design pattern
         static readonly object _locker = new object(); // for multithreading purpose
 
@@ -34,7 +38,7 @@ namespace InstamojoAPI
 
         private InstamojoImplementation() { }
 
-        private InstamojoImplementation(String clientId, String clientSecret, String apiEndpoint, String authEndpoint) 
+        private InstamojoImplementation(String clientId, String clientSecret, String apiEndpoint, String authEndpoint)
         {
             this.clientId = clientId;
             this.clientSecret = clientSecret;
@@ -50,7 +54,7 @@ namespace InstamojoAPI
      * @return the api
      * @throws IOException the io exception
      */
-        public static Instamojo getApi(String clientId, String clientSecret, String apiEndpoint, String authEndpoint) 
+        public static async Task<Instamojo> getApi(String clientId, String clientSecret, String apiEndpoint, String authEndpoint)
         {
             if (string.IsNullOrEmpty(clientId))
             {
@@ -69,38 +73,38 @@ namespace InstamojoAPI
                 throw new BaseException("Please enter authEndpoint");
 
             }
-            return getInstamojo(clientId, clientSecret, apiEndpoint, authEndpoint);
+            return await getInstamojoAsync(clientId, clientSecret, apiEndpoint, authEndpoint);
         }
 
-        public static Instamojo getApi(String clientId, String clientSecret) 
+        public static async Task<Instamojo> getApiAsync(String clientId, String clientSecret)
         {
-            return getApi(clientId, clientSecret, InstamojoConstants.INSTAMOJO_API_ENDPOINT, InstamojoConstants.INSTAMOJO_AUTH_ENDPOINT);
+            return await getApi(clientId, clientSecret, InstamojoConstants.INSTAMOJO_API_ENDPOINT, InstamojoConstants.INSTAMOJO_AUTH_ENDPOINT);
         }
 
-        private static Instamojo getInstamojo(String clientId, String clientSecret, String apiEndpoint, String authEndpoint)
+        private static async Task<Instamojo> getInstamojoAsync(String clientId, String clientSecret, String apiEndpoint, String authEndpoint)
         {
             if (uniqueInstance == null)
             {
-                lock (_locker)
-                {
+               
+                
                     if (uniqueInstance == null)
                     {
                         uniqueInstance = new InstamojoImplementation(clientId, clientSecret, apiEndpoint, authEndpoint);
-                        accessToken = getAccessToken(clientId, clientSecret, authEndpoint);
+                        accessToken = await getAccessTokenAsync(clientId, clientSecret, authEndpoint);
                     }
-                }
+                
             }
             else
             {
                 if (isTokenExpired())
                 {
-                    lock (_locker)
-                    {
+                    
+                    
                         if (isTokenExpired())
                         {
-                            accessToken = getAccessToken(clientId, clientSecret, authEndpoint);
+                            accessToken = await getAccessTokenAsync(clientId, clientSecret, authEndpoint);
                         }
-                    }
+                    
                 }
             }
             return uniqueInstance;
@@ -109,7 +113,7 @@ namespace InstamojoAPI
         private static bool isTokenExpired()
         {
             long durationInSeconds = (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) - tokenCreationTime;
-            if (durationInSeconds >=  accessToken.expires_in)
+            if (durationInSeconds >= accessToken.expires_in)
             {
                 return true;
             }
@@ -117,25 +121,51 @@ namespace InstamojoAPI
             return false;
         }
 
-        private static AccessTokenResponse getAccessToken(string clientId, string clientSecret, string authEndpoint)
-		{
+        private static async Task<AccessTokenResponse> getAccessTokenAsync(string clientId, string clientSecret, string authEndpoint)
+        {
             AccessTokenResponse objPaymentRequestDetailsResponse;
             try
             {
-                using (var client = new WebClient())
+                using (var client =  new HttpClient())
                 {
 
                     ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;
                     ServicePointManager.DefaultConnectionLimit = 9999;
 
-                    var values = new NameValueCollection();
-                    values["client_id"] = clientId;
-                    values["client_secret"] = clientSecret;
-                    values["grant_type"] = InstamojoConstants.GRANT_TYPE;
+                    var request = new HttpRequestMessage
+                    {
+                        Method = HttpMethod.Post,
+                        RequestUri = new Uri(authEndpoint),
+                        Headers ={
+                            { "accept", "application/json" }
+                                                            },
+                        Content = new FormUrlEncodedContent(new Dictionary<string, string>
+                                {
+                                      { "grant_type",InstamojoConstants.GRANT_TYPE },
+                                      {"client_id",clientId },
+                                      {"client_secret",clientSecret }
+                                }),
+                    };
 
-                    var response = client.UploadValues(authEndpoint, "POST", values); //"https://test.instamojo.com/oauth2/token/", values);
-                    var responseString = Encoding.Default.GetString(response);
-                    objPaymentRequestDetailsResponse = JsonConvert.DeserializeObject<AccessTokenResponse>(responseString);
+                    //var values = new NameValueCollection();
+                    //values["client_id"] = clientId;
+                    //values["client_secret"] = clientSecret;
+                    //values["grant_type"] = InstamojoConstants.GRANT_TYPE;
+
+                    using (var response = await client.SendAsync(request))
+                    {
+                        response.EnsureSuccessStatusCode();
+                        var body = await response.Content.ReadAsStringAsync();
+                        objPaymentRequestDetailsResponse = JsonConvert.DeserializeObject<AccessTokenResponse>(body);
+                        Console.WriteLine(body);
+                    }
+                  
+                    //var responseString = Encoding.Default.GetString(response);
+                 
+                  
+
+
+
                     if (string.IsNullOrEmpty(objPaymentRequestDetailsResponse.access_token))
                     {
                         throw new BaseException("Could not get the access token due to " + objPaymentRequestDetailsResponse.error);
@@ -147,7 +177,7 @@ namespace InstamojoAPI
                 throw new IOException(ex.Message);
             }
             catch (WebException ex)
-			{
+            {
                 objPaymentRequestDetailsResponse = JsonDeserialize<AccessTokenResponse>(ex.Message);
             }
 
@@ -193,11 +223,11 @@ namespace InstamojoAPI
                 //JavaScriptSerializer ser = new JavaScriptSerializer();
                 //ser.RegisterConverters(new JavaScriptConverter[] { new JavaScriptConverters.NullPropertiesConverter() });
 
-                
+
                 string strJSONData = JsonConvert.SerializeObject(PostData);
 
 
-                    //ser.Serialize(PostData);
+                //ser.Serialize(PostData);
                 using (var streamWriter = new StreamWriter(myHttpWebRequest.GetRequestStream()))
                 {
                     streamWriter.Write(strJSONData);
@@ -214,7 +244,7 @@ namespace InstamojoAPI
 
         private static T JsonDeserialize<T>(string jsonString)
         {
-			return new JavaScriptSerializer().Deserialize<T>(jsonString);
+            return new JavaScriptSerializer().Deserialize<T>(jsonString);
         }
 
         private static string showErrorMessage(string errorMessage)
@@ -233,10 +263,10 @@ namespace InstamojoAPI
         {
             if (objPaymentRequest == null)
             {
-				throw new ArgumentNullException(typeof(PaymentOrder).Name, "PaymentOrder Object Can not be Null ");
+                throw new ArgumentNullException(typeof(PaymentOrder).Name, "PaymentOrder Object Can not be Null ");
             }
 
-            bool isInValid= objPaymentRequest.validate();
+            bool isInValid = objPaymentRequest.validate();
             if (isInValid)
             {
                 throw new InvalidPaymentOrderException();
@@ -269,7 +299,7 @@ namespace InstamojoAPI
                     if (err != null)
                     {
                         string htmlResponse = new StreamReader(err.GetResponseStream()).ReadToEnd();
-						throw new InvalidPaymentOrderException(htmlResponse);
+                        throw new InvalidPaymentOrderException(htmlResponse);
                     }
                 }
                 throw new WebException(ex.Message, ex.InnerException);
@@ -290,7 +320,7 @@ namespace InstamojoAPI
         {
             if (objPaymentOrderListRequest == null)
             {
-				throw new ArgumentNullException(typeof(PaymentOrderListRequest).Name, "PaymentOrderListRequest Object Can not be Null");
+                throw new ArgumentNullException(typeof(PaymentOrderListRequest).Name, "PaymentOrderListRequest Object Can not be Null");
             }
             string queryString = "", stream = "";
 
@@ -364,7 +394,7 @@ namespace InstamojoAPI
         {
             if (string.IsNullOrEmpty(strOrderId))
             {
-				throw new ArgumentNullException(typeof(string).Name, "Order Id Can not be Null or Empty");
+                throw new ArgumentNullException(typeof(string).Name, "Order Id Can not be Null or Empty");
             }
             try
             {
@@ -409,7 +439,7 @@ namespace InstamojoAPI
         {
             if (string.IsNullOrEmpty(strTransactionId))
             {
-				throw new ArgumentNullException(typeof(string).Name, "Transaction Id Can not be Null or Empty");
+                throw new ArgumentNullException(typeof(string).Name, "Transaction Id Can not be Null or Empty");
             }
             try
             {
@@ -456,14 +486,14 @@ namespace InstamojoAPI
         * @return objPaymentCreateResponse: CreatePaymentOrderResponse object.
         */
         public CreateRefundResponce createNewRefundRequest(Refund objCreateRefund)
-        {            
+        {
             if (objCreateRefund == null)
             {
                 throw new ArgumentException("Refund object can not be null.");
             }
             if (objCreateRefund.payment_id == null)
             {
-				throw new ArgumentNullException(typeof(Refund).Name, "PaymentId cannot be null ");
+                throw new ArgumentNullException(typeof(Refund).Name, "PaymentId cannot be null ");
             }
             bool isInValid = objCreateRefund.validate();
             if (isInValid)

@@ -88,25 +88,25 @@ namespace BulkeyBook.Areas.Customer.Controllers
 
 
         [HttpPost]
-        public IActionResult Privacy(Payment image)
+        public async Task<IActionResult> PrivacyAsync(Payment image)
         {
             string Insta_client_id = "test_3goYA7nGppFHIIr3THm6H8lxocji0SDQyyD",
                   Insta_client_secret = "test_8lbcz6MmbYH5Zjp5LxaiLlDKzIAJE5xD9X3rIH8gYjxRXsssBjFsByUjTaO3RJt77c5289T1xDRuT15w2Sm8apgO1qkabICa3i4rbcd53WjS5RwuN3GXPrPCcqr",
                   Insta_Endpoint = InstamojoConstants.INSTAMOJO_API_ENDPOINT,
                   Insta_Auth_Endpoint = InstamojoConstants.INSTAMOJO_AUTH_ENDPOINT;
-            Instamojo objClass = InstamojoImplementation.getApi(Insta_client_id, Insta_client_secret, Insta_Endpoint, Insta_Auth_Endpoint);
+            Instamojo objClass = await InstamojoImplementation.getApi(Insta_client_id, Insta_client_secret, Insta_Endpoint, Insta_Auth_Endpoint);
             CreatePaymentOrder(objClass, image);
             return View();
         }
 
         
-        public IActionResult Callback()
+        public async Task<IActionResult> CallbackAsync()
         {
             string Insta_client_id = "test_3goYA7nGppFHIIr3THm6H8lxocji0SDQyyD",
                   Insta_client_secret = "test_8lbcz6MmbYH5Zjp5LxaiLlDKzIAJE5xD9X3rIH8gYjxRXsssBjFsByUjTaO3RJt77c5289T1xDRuT15w2Sm8apgO1qkabICa3i4rbcd53WjS5RwuN3GXPrPCcqr",
                   Insta_Endpoint = InstamojoConstants.INSTAMOJO_API_ENDPOINT,
                   Insta_Auth_Endpoint = InstamojoConstants.INSTAMOJO_AUTH_ENDPOINT;
-            Instamojo objClass = InstamojoImplementation.getApi(Insta_client_id, Insta_client_secret, Insta_Endpoint, Insta_Auth_Endpoint);
+            Instamojo objClass = await InstamojoImplementation.getApi(Insta_client_id, Insta_client_secret, Insta_Endpoint, Insta_Auth_Endpoint);
           
             return View(Getpaymebtdatils(objClass));
         }
