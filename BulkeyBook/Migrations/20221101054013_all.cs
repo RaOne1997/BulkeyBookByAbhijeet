@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace BulkeyBook.Migrations
 {
-    public partial class imageuplode : Migration
+    public partial class all : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -215,7 +215,7 @@ namespace BulkeyBook.Migrations
                     Price = table.Column<double>(type: "float", nullable: false),
                     Price50 = table.Column<double>(type: "float", nullable: false),
                     Price100 = table.Column<double>(type: "float", nullable: false),
-                    ImageUrl = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    ImageUrl = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
                     CategoryId = table.Column<int>(type: "int", nullable: false),
                     CoverTypeId = table.Column<int>(type: "int", nullable: false)
                 },
@@ -244,17 +244,17 @@ namespace BulkeyBook.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ProductId = table.Column<int>(type: "int", nullable: false),
                     Count = table.Column<int>(type: "int", nullable: false),
-                    UserINtoUserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ApplicationUserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    UserINtoUserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_shoppingCarts", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_shoppingCarts_AspNetUsers_ApplicationUserId",
-                        column: x => x.ApplicationUserId,
+                        name: "FK_shoppingCarts_AspNetUsers_UserINtoUserId",
+                        column: x => x.UserINtoUserId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_shoppingCarts_Products_ProductId",
                         column: x => x.ProductId,
@@ -313,14 +313,14 @@ namespace BulkeyBook.Migrations
                 column: "CoverTypeId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_shoppingCarts_ApplicationUserId",
-                table: "shoppingCarts",
-                column: "ApplicationUserId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_shoppingCarts_ProductId",
                 table: "shoppingCarts",
                 column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_shoppingCarts_UserINtoUserId",
+                table: "shoppingCarts",
+                column: "UserINtoUserId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

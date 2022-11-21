@@ -122,7 +122,6 @@ namespace BulkeyBook.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<byte[]>("ImageUrl")
-                        .IsRequired()
                         .HasColumnType("varbinary(max)");
 
                     b.Property<double>("ListPrice")
@@ -226,9 +225,6 @@ namespace BulkeyBook.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<string>("ApplicationUserId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<int>("Count")
                         .HasColumnType("int");
 
@@ -237,13 +233,13 @@ namespace BulkeyBook.Migrations
 
                     b.Property<string>("UserINtoUserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ApplicationUserId");
-
                     b.HasIndex("ProductId");
+
+                    b.HasIndex("UserINtoUserId");
 
                     b.ToTable("shoppingCarts");
                 });
@@ -406,13 +402,15 @@ namespace BulkeyBook.Migrations
 
             modelBuilder.Entity("BulkyBook.Models.ShoppingCart", b =>
                 {
-                    b.HasOne("BulkeyBook.Models.DataAccess.Modul.UserINtoUser", "userINtoUser")
-                        .WithMany()
-                        .HasForeignKey("ApplicationUserId");
-
                     b.HasOne("BulkeyBook.Models.DataAccess.Modul.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BulkeyBook.Models.DataAccess.Modul.UserINtoUser", "userINtoUser")
+                        .WithMany()
+                        .HasForeignKey("UserINtoUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

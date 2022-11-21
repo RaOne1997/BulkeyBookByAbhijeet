@@ -1,6 +1,6 @@
 ﻿namespace InstamojoAPI
 {
-    public class Order
+    public class Orderss
     {
 
         public string id { get; set; }

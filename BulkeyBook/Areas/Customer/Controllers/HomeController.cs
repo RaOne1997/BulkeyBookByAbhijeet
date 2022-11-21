@@ -13,6 +13,14 @@ using static System.Net.Mime.MediaTypeNames;
 using BulkeyBook.Models.Static_Roles;
 using InstamojoAPI;
 using System.Net;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Razorpay.Api;
+using Paymentsss = BulkeyBook.Models.DataAccess.Modul.Payment;
+using Microsoft.Extensions.Options;
+using System.Collections.Generic;
+using Payment = Razorpay.Api.Payment;
+using BulkeyBook.Models.Razorepay;
 
 namespace BulkeyBook.Areas.Customer.Controllers
 {
@@ -87,8 +95,54 @@ namespace BulkeyBook.Areas.Customer.Controllers
         }
 
 
+
+        public IActionResult ReasurePay()
+        {
+            RazorpayClient client = new RazorpayClient("rzp_test_nhrFMzGsypzvM5", "wPORnpniDaEMurRzKiT0YTm5");
+
+            Dictionary<string, object> options = new Dictionary<string, object>();
+            OrderModel order = new OrderModel()
+            {
+                OrderAmount = 500,
+                Currency = "INR",
+                Payment_Capture = 1,    // 0 - Manual capture, 1 - Auto capture
+                Notes = new Dictionary<string, string>()
+                {
+                    { "note 1", "first note while creating order" }, { "note 2", "you can add max 15 notes" },
+                    { "note for account 1", "this is a linked note for account 1" }, { "note 2 for second transfer", "it's another note for 2nd account" }
+                }
+            };
+            options.Add("amount", 5000);
+            options.Add("currency", "INR");
+            options.Add("receipt", "MerchantTransactionId");
+            options.Add("payment_capture", 1);
+            var s = new Order();
+            Order orders = s.Create(options);
+
+
+            //RazorPayOptionsModel razorPayOptions = new RazorPayOptionsModel()
+            //{
+            //    Key = "rzp_test_nhrFMzGsypzvM5",
+            //    AmountInSubUnits = 500  ,
+            //    Currency = "INR",
+            //    Name = "Skynet",
+            //    Description = "for Dotnet",
+            //    ImageLogUrl = "",
+            //    OrderId = order.,
+            //    ProfileName = registration.Name,
+            //    ProfileContact = registration.Mobile,
+            //    ProfileEmail = registration.Email,
+            //    Notes = new Dictionary<string, string>()
+            //    {
+            //        { "note 1", "this is a payment note" }, { "note 2", "here also, you can add max 15 notes" }
+            //    }
+            //};
+            return View();
+        }
+
+
         [HttpPost]
-        public async Task<IActionResult> PrivacyAsync(Payment image)
+        public async Task<IActionResult> PrivacyAsync(Paymentsss image)
         {
             string Insta_client_id = "test_3goYA7nGppFHIIr3THm6H8lxocji0SDQyyD",
                   Insta_client_secret = "test_8lbcz6MmbYH5Zjp5LxaiLlDKzIAJE5xD9X3rIH8gYjxRXsssBjFsByUjTaO3RJt77c5289T1xDRuT15w2Sm8apgO1qkabICa3i4rbcd53WjS5RwuN3GXPrPCcqr",
@@ -124,7 +178,7 @@ namespace BulkeyBook.Areas.Customer.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
-        public  void CreatePaymentOrder(Instamojo objClass, Payment payment)
+        public  void CreatePaymentOrder(Instamojo objClass, Paymentsss payment)
         {
             PaymentOrder objPaymentRequest = new PaymentOrder();
             //Required POST parameters
@@ -133,7 +187,7 @@ namespace BulkeyBook.Areas.Customer.Controllers
             objPaymentRequest.phone = "9969156561";
             objPaymentRequest.description = "Test description";
             objPaymentRequest.amount = payment.amount;
-            objPaymentRequest.currency = "INR";
+            objPaymentRequest.currency = "USD";
             objPaymentRequest.allow_repeated_payments = false;
             objPaymentRequest.send_email =false;
 
